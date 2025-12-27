@@ -1,0 +1,23 @@
+# Web Framework
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+pydantic==2.5.3
+
+# CORS and Static Files
+python-multipart==0.0.6
+
+# HTTP Requests
+httpx==0.26.0
+requests==2.31.0
+
+# Authentication & JWT
+python-jose[cryptography]==3.3.0
+
+# Environment Variables
+python-dotenv==1.0.0
+
+# AI Text Generation
+g4f==0.2.0.5
+
+# Utilities
+aiofiles==23.2.1

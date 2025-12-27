@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto Posting</title>
+    <link rel="icon" type="image/x-icon" href="/static/icon.ico">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        /* Стили для страницы авторизации */
+        #auth-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 9999;
+        }
+
+        #app-container {
+            display: none;
+        }
+
+        /* Медиа-запрос для показа правой панели на больших экранах */
+        @media (min-width: 1024px) {
+            #auth-right-panel {
+                display: flex !important;
+            }
+        }
+
+        /* На маленьких экранах левая панель на всю ширину */
+        @media (max-width: 1023px) {
+            #auth-left-panel {
+                width: 100% !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Контейнер авторизации -->
+    <div id="auth-container"></div>
+
+    <!-- Основной интерфейс -->
+    <div id="app-container" class="app">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="/static/icon.ico" alt="Icon" style="width: 24px; height: 24px; margin-right: 8px; flex-shrink: 0;">
+                <h1>AutoPosting</h1>
+            </div>
+            
+            <nav class="nav">
+                <a href="#" class="nav-item active" data-page="dashboard">
+                    <i class="bi bi-house-door icon"></i>
+                    <span data-i18n="nav_dashboard">Дашборд</span>
+                </a>
+                <a href="#" class="nav-item" data-page="posts">
+                    <i class="bi bi-file-text icon"></i>
+                    <span data-i18n="nav_posts">Пости</span>
+                </a>
+                <a href="#" class="nav-item" data-page="create">
+                    <i class="bi bi-plus-circle icon"></i>
+                    <span data-i18n="nav_create">Створити пост</span>
+                </a>
+                <a href="#" class="nav-item" data-page="analytics">
+                    <i class="bi bi-bar-chart icon"></i>
+                    <span data-i18n="nav_analytics">Аналітика</span>
+                </a>
+                <a href="#" class="nav-item" data-page="recommendations">
+                    <i class="bi bi-bullseye icon"></i>
+                    <span data-i18n="nav_recommendations">Рекомендації</span>
+                </a>
+                <a href="#" class="nav-item" data-page="templates">
+                    <i class="bi bi-file-earmark icon"></i>
+                    <span data-i18n="nav_templates">Шаблони</span>
+                </a>
+                <a href="#" class="nav-item" data-page="settings">
+                    <i class="bi bi-gear icon"></i>
+                    <span data-i18n="nav_settings">Налаштування</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="header">
+                <h2 id="page-title">Дашборд</h2>
+                <div class="header-actions">
+                    <div class="lang-selector">
+                        <button class="btn btn-icon" id="lang-toggle" onclick="toggleLangDropdown()">
+                            <i class="bi bi-translate"></i>
+                            <span id="lang-indicator">UA</span>
+                            <i class="bi bi-chevron-down" style="font-size: 10px; margin-left: 2px;"></i>
+                        </button>
+                        <div class="lang-dropdown" id="lang-dropdown">
+                            <div class="lang-option" onclick="setLanguage('uk')">
+                                <span class="lang-flag">🇺🇦</span>
+                                <span>Українська</span>
+                                <i class="bi bi-check lang-check" id="check-uk"></i>
+                            </div>
+                            <div class="lang-option" onclick="setLanguage('en')">
+                                <span class="lang-flag">🇬🇧</span>
+                                <span>English</span>
+                                <i class="bi bi-check lang-check" id="check-en"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="user-info"></div>
+                    <button class="btn btn-icon" onclick="refreshData()"><i class="bi bi-arrow-repeat"></i></button>
+                </div>
+            </header>
+
+            <div class="content" id="content">
+                <!-- Контент буде завантажуватись динамічно -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Модальні вікна -->
+    <div id="modal-overlay" class="modal-overlay"></div>
+
+    <script src="/static/js/i18n.js"></script>
+    <script src="/static/js/auth.js"></script>
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/images.js"></script>
+    <script src="/static/js/api-images.js"></script>
+    <script src="/static/js/charts.js"></script>
+    <script src="/static/js/pages.js"></script>
+    <script src="/static/js/app.js"></script>
+
+    <script>
+        // Відкриття/закриття dropdown мови
+        function toggleLangDropdown() {
+            const dropdown = document.getElementById('lang-dropdown');
+            dropdown.classList.toggle('active');
+        }
+
+        // Встановлення мови
+        function setLanguage(lang) {
+            i18n.setLang(lang);
+            updateLangUI();
+
+            // Закриваємо dropdown
+            document.getElementById('lang-dropdown').classList.remove('active');
+        }
+
+        // Оновлення UI індикатора мови
+        function updateLangUI() {
+            const lang = i18n.getLang();
+            document.getElementById('lang-indicator').textContent = lang === 'uk' ? 'UA' : 'EN';
+
+            // Оновлюємо галочки
+            document.getElementById('check-uk').classList.toggle('active', lang === 'uk');
+            document.getElementById('check-en').classList.toggle('active', lang === 'en');
+        }
+
+        // Закриття dropdown при кліку поза ним
+        document.addEventListener('click', (e) => {
+            const langSelector = document.querySelector('.lang-selector');
+            const dropdown = document.getElementById('lang-dropdown');
+            if (langSelector && dropdown && !langSelector.contains(e.target)) {
+                dropdown.classList.remove('active');
+            }
+        });
+
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Встановлюємо початковий UI мови
+            updateLangUI();
+
+            // Сначала проверяем авторизацию
+            const isAuth = await authManager.init();
+
+            // Если авторизован - запускаем приложение
+            if (isAuth) {
+                // Инициализируем основное приложение
+                if (typeof initApp === 'function') {
+                    initApp();
+                }
+
+                // Застосовуємо переклади після ініціалізації
+                i18n.updateUI();
+            }
+        });
+    </script>
+</body>
+</html>
